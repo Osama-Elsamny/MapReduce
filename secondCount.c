@@ -9,6 +9,7 @@
 
 #define THREAD_NUM 5
 #define MAX_NUM_WORD 1024
+#define MAX_STRING_SIZE 1024
 int size;
 typedef struct Map{
     char* key;
@@ -46,7 +47,7 @@ void input_reader(char* file, char** word){
         exit(1);
     }
     while(!feof(inputFile)){
-        word[i] = (char*)malloc(sizeof(char));
+        word[i] = (char*)malloc(MAX_STRING_SIZE * sizeof(char));
         fscanf(inputFile, "%s", word[i]);
         i++;
     }
@@ -65,7 +66,7 @@ void input_reader(char* file, char** word){
 Map* mapping(char* key){
     Map *temp = (Map*) malloc(sizeof(Map));
     temp->value = 1;
-    temp->key = (char*)malloc(sizeof(char));
+    temp->key = (char*)malloc(MAX_STRING_SIZE * sizeof(char));
     strcpy(temp->key, key);
     temp->next = NULL;
     return temp;
@@ -87,7 +88,7 @@ Map* reduce(Map* list){
         value++;
     }
     temp->value = value;
-    temp->key = (char*)malloc(sizeof(char));
+    temp->key = (char*)malloc(MAX_STRING_SIZE * sizeof(char));
     strcpy(temp->key, list->key);
     temp->next = NULL;
     return temp;
@@ -139,7 +140,7 @@ void* ThreadMap(void* arg){
     Map *itr = NULL;
     input->mylist = mapping(input->array[input->startIndx]);
     itr = input->mylist;
-    for(int i = input->startIndx + 1; i < input->endIndx; i++){
+    for(int i = (input->startIndx) + 1; i < input->endIndx; i++){
         itr->next = mapping(input->array[i]);
         itr = itr->next;
     }
@@ -206,7 +207,13 @@ Map* combineList(Args **input){
     }
     return temp;
 }
-//-----add comment
+/** 
+ * Funcition name: getsize
+ * Purpose: To find the number of different words in the list
+ * Developer: Osama Elsamny
+ * Input: the list to find
+ * Output: A integer with number of different words in the list
+*/
 int getsize(Map *list){
     int n = 1;
     for(Map *itr = list; itr->next != NULL; itr = itr->next){
@@ -261,7 +268,8 @@ void findSimilarList(Map **temp, Map *list, int n){
  * Purpose: To manage multiple threads calling the reduce 
  *          function 
  * Developer: Osama Elsamny
- * Input: 
+ * Input: A sturcture with differnt inputs please check
+ *        the def above
  * Output: N/A
 */ 
 void* ThreadReduce(void* arg){
@@ -279,6 +287,16 @@ void* ThreadReduce(void* arg){
         input->threadNum = input->threadNum + 1;
     }
     return NULL;
+}
+
+void print(ArgsReduce **input){
+    for(int i = 0; i < THREAD_NUM; i++){
+        Map *temp = input[i]->myOutput;
+        while(temp != NULL){
+            output(temp);
+            temp = temp->next;
+        }
+    }
 }
 
 /** 
@@ -322,13 +340,8 @@ int main(int argc, char* argv[]){
     for(int i = 0; i < THREAD_NUM; i++){
         pthread_join(threadReducing[i], NULL);
     }
-    for(int i = 0; i < THREAD_NUM; i++){
-        Map *temp = theadsReduceInput[i]->myOutput;
-        while(temp != NULL){
-            output(temp);
-            temp = temp->next;
-        }
-    }
+    print(theadsReduceInput);
+
     return 0;
 }
 /** 
