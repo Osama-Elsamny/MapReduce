@@ -7,6 +7,13 @@
 #include <stdbool.h>
 #include "map.h"
 
+/**
+ * Funcition name: contains
+ * Purpose: check if database contains the input key
+ * Developer: Osama Elsamny
+ * Input: Map and key
+ * Output: true if map contains the passed in key
+*/
 bool contains(Map *map, char *key){
     Map *temp = NULL;
     temp = iterate(map, key);
@@ -40,7 +47,13 @@ bool put(Map *map, char *key, int value){
     current->next->next = NULL;
     return true;
 }
-
+/**
+ * Funcition name: contains
+ * Purpose: helper function for contains for iterating over the map
+ * Developer: Osama Elsamny
+ * Input: Map and key
+ * Output: returns a pointer to map node
+*/
 Map* iterate(Map *map, char *key){
     for(Map *current = map; current != NULL; current = current->next){
         if(strcmp(current->key, key) == 0){
